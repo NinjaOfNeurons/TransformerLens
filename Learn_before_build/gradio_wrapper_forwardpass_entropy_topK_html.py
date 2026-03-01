@@ -7,31 +7,45 @@ tokenizer = AutoTokenizer.from_pretrained("gpt2")
 model = AutoModelForCausalLM.from_pretrained("gpt2")
 model.eval()
 
+def prob_to_color(prob):
+    r = int(255 * (1 - prob))
+    g = int(255 * prob)
+    return f"rgb({r},{g},60)"
+
 def analyze(text):
-    ids = tokenizer.encode(text)
     ids_tensor = tokenizer.encode(text, return_tensors="pt")
+    
     with torch.no_grad():
         outputs = model(ids_tensor)
-        logits = outputs.logits[0]  # shape: (T, vocab_size)
+        logits = outputs.logits[0]
         T = ids_tensor.shape[1]
-        for i in range(1, T):
-            logits_prev = logits[i-1]       # predicts position i
-            prob = F.softmax(logits_prev, dim=0)
-            actual_token_id = ids_tensor[0][i].item()
-            actual_prob = prob[actual_token_id].item()
+
+        # collect stats for every token
+        stats = []
+        for i in range(T):
+            token_id = ids_tensor[0][i].item()
+            token_str = tokenizer.decode([token_id])
+
+            if i == 0:
+                stats.append({"token": token_str, "prob": None, "entropy": None})
+                continue
+
+            prob = F.softmax(logits[i-1], dim=0)
+            actual_prob = prob[token_id].item()
             entropy = -torch.sum(prob * torch.log(prob + 1e-10)).item()
-            top_k = torch.topk(prob, k=10)
-            top_k_tokens = [tokenizer.decode([idx.item()]) for idx in top_k.indices]
-            top_k_probs = [f"{v.item():.2%}" for v in top_k.values]
 
-            print(f"token: {tokenizer.decode([actual_token_id])} → prob: {actual_prob:.4f} | entropy: {entropy:.3f}")
-            print(f"top 10: {list(zip(top_k_tokens, top_k_probs))}")
-            print("---")
+            stats.append({"token": token_str, "prob": actual_prob, "entropy": entropy})
 
-            tokens = [tokenizer.decode([id]) for id in ids]
-    
-    result = list(zip(tokens, ids)) # zipping  token and ids in 1 single variable 
-    return str(result)
+    # build html
+    html = ""
+    for s in stats:
+        token = s["token"]
+        if s["prob"] is None:
+            html += f"<span style='background:#444; color:white; padding:5px; margin:3px; border-radius:4px;'>{token} start</span>"
+        else:
+            color = prob_to_color(s["prob"])
+            html += f"<span style='background:{color}; color:white; padding:5px; margin:3px; border-radius:4px;'>{token} {s['prob']:.2%}</span>"
+    return html
 
 gr.Interface(
     fn=analyze,
