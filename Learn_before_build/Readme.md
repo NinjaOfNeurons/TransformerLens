@@ -1,5 +1,8 @@
 # ⚡ Transformer Lens
 
+<img width="1312" height="691" alt="image" src="https://github.com/user-attachments/assets/8b211f67-51b1-4f2b-941b-ad34bc79290d" />
+
+
 Built this from scratch to understand how GPT-2 thinks — token by token.
 
 ## What it does
