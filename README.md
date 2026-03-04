@@ -1,12 +1,3 @@
----
-title: Transformer Lens
-emoji: ⚡
-colorFrom: indigo
-colorTo: cyan
-sdk: docker
-pinned: false
----
-
 # ⚡ Transformer Lens
 
 An interactive GPT-2 visualizer that goes beyond next-token prediction. Built as a learning tool for understanding transformers from the inside out.
