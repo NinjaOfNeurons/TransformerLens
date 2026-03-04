@@ -2,6 +2,8 @@
 
 An interactive GPT-2 visualizer that goes beyond next-token prediction. Built as a learning tool for understanding transformers from the inside out.
 
+https://github.com/user-attachments/assets/c74f0c18-594d-42fa-b479-8c834cc5beb2
+
 ## What it shows
 
 ### ① Tokenization layer
